@@ -1,0 +1,19 @@
+// Add data layer events for analytics tracking
+const attachDataLayerEvent = function(data) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(data);
+};
+
+window.addEventListener("load", () => {
+    if (datalayer_vars) {
+        const data_layer_page_data = {
+            event: 'initialize_dataLayer',
+            page_title: datalayer_vars.title,
+            page_type: datalayer_vars.type,
+            page_parent: datalayer_vars.ancestors,
+            page_tags: datalayer_vars.tags,
+            page_publish_date: datalayer_vars.publish_date,
+        }
+        attachDataLayerEvent(data_layer_page_data);
+    }
+});

@@ -1,0 +1,134 @@
+(function($) {
+    const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+
+    window.onscroll = function() {
+        var currentScrollPos = window.pageYOffset;
+        // 20 is an arbitrary number here, just to make you think if you need the prevScrollpos variable:
+        if (currentScrollPos > 40) {
+          // I am using 'display' instead of 'top':
+          $('.fl-page-header-up-navigation').show();
+        } else {
+          $(".fl-page-header-up-navigation").hide();
+        }
+    }
+
+    $('.share-facebook').bind('click', function(e){
+        e.preventDefault();
+        FB.ui({
+            method: 'share',
+            href: newURL,
+        }, function(response){});
+    });
+
+    // Trigger share to facebook custom button
+    $('.fl-button-group-button-60ff22c480c00-0 .fl-button').bind('click', function(e){
+        e.preventDefault();
+        FB.ui({
+            method: 'share',
+            href: newURL,
+        }, function(response){});
+    });
+
+    $('.share-link').bind('click', function(e){
+        e.preventDefault();
+        navigator.clipboard.writeText(newURL)
+            .then(() => {
+                var share = document.getElementById('shareModal');
+                var shareBody = share.querySelector('.modal-body');
+                var notice = document.createElement("span");
+                notice.innerHTML = "Link Copied";
+                notice.classList.add('notice');
+                shareBody.appendChild(notice);
+                setTimeout(function(){
+                    notice.remove()
+                },3000);
+
+             })
+            .catch((error) => { alert(`Copy failed! ${error}`) })
+    });
+
+    // Add data layer events for analytics tracking
+    const attachDataLayerEvent = function(data) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(data);
+    };
+    
+    window.addEventListener("load", () => {
+        document.querySelectorAll('[data-click-item]').forEach((el) => {
+            el.addEventListener('click', () => {
+                attachDataLayerEvent({
+                    event: 'click_event',
+                    click_item: el.dataset.clickItem,
+                    click_text: el.textContent.trim(),
+                    nav_link: el.dataset.navLink,
+                    element_location: el.dataset.elementLocation
+                });
+            });
+        });
+    });
+
+	/**
+	 * Update how the main menu works on mobile devices.
+	 *
+	 * UberMenu normally expands the menu when tapping the text. This function
+	 * changes the behaviour so that tapping the text will go to the section
+	 * instead.
+	 */
+	$( '.ubermenu-main .ubermenu-target-title' ).on( 'click touchstart', function ( e ) {
+		// Only run if the menu is in mobile mode.
+		if ( $( this ).closest( '.ubermenu-main' ).hasClass( 'ubermenu-mobile-view' ) ) {
+			e.stopPropagation();
+            e.preventDefault();
+
+			// Mobile chrome will still try to open the submenu as ubmermenu
+			// fires before this. Have to manually remove the elements :(
+			$( this ).closest( 'li' ).addClass( 'force-ubermenu-caret' );
+			$( this ).closest( 'li' ).find( '.ubermenu-submenu' ).remove();
+			$( this ).closest( 'li' ).find( '.ubermenu-sub-indicator-close' ).remove();
+			$( this ).closest( 'li' ).removeClass( 'ubermenu-active' );
+
+            const closestAnchor = $( this ).closest( 'a');
+            if (closestAnchor[0]) {
+                // add data layer event for mobile nav trigger
+                attachDataLayerEvent({
+                    event: 'click_event',
+                    click_item: closestAnchor[0].dataset.clickItem,
+                    click_text: closestAnchor[0].textContent.trim(),
+                    nav_link: closestAnchor[0].dataset.navLink,
+                    element_location: closestAnchor[0].dataset.elementLocation
+                });
+            }
+			document.location = closestAnchor.attr( 'href' );
+		}
+	} );
+
+    // Disable body scroll when mobile menu is open
+    $( '.ubermenu-responsive-toggle' ).on( 'ubermenutoggledopen' , function(e) {
+        // When the modal is shown, we want a fixed body
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${window.scrollY}px`;
+    } );
+
+    // Enable body scroll when mobile menu is hidden
+    $( '.ubermenu-responsive-toggle' ).on( 'ubermenutoggledclose' , function(e) {
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.removeProperty('width');
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    } );
+
+    // Autofocus search input
+    $('#searchModal').on('shown.bs.modal', function () {
+        $('.fl-search-input').trigger('focus')
+    })
+
+})( jQuery );
+
+var changemakers = document.querySelectorAll('.gffw-featured-changemakers');
+
+changemakers?.forEach(function(changemaker) {
+  // Turned back on for now
+	// changemaker.closest('div.fl-row').style.display = 'none';
+});
